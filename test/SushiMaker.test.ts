@@ -55,7 +55,43 @@ describe("SushiMaker", function () {
       expect(await this.sushiEth.balanceOf(this.sushiMaker.address)).to.equal(0)
       expect(await this.sushi.balanceOf(this.bar.address)).to.equal("1897569270781234370")
     })
+/**
 
+TODO: Sandwhich attk test
+
+        async function swapAll(signer, token, pair, swapFirstToken){
+      const amountIn = await token.balanceOf(signer.address)
+      const [reserve0, reserve1] = await pair.getReserves();
+      await token.connect(signer).transfer(pair.address, amountIn);
+      if(swapFirstToken){
+        const amountOut =
+                amountIn.mul(997).mul(reserve0).div(
+                reserve1.mul(1000).add(amountIn.mul(997)));
+        await pair.swap(amountOut, 0, signer.address, []);
+      } else {
+        const amountOut =
+                amountIn.mul(997).mul(reserve1).div(
+                reserve0.mul(1000).add(amountIn.mul(997)));
+        await pair.swap(0, amountOut, signer.address, []);
+      }
+    }
+
+    it("should not be possible to sandwitch attack SUSHI - ETH conversions", async function () {
+      const initialAmount = getBigNumber(1000);
+      await this.weth.transfer(this.bob.address, initialAmount);
+      await swapAll(this.bob, this.weth, this.sushiEth, false);
+
+      await this.sushiEth.transfer(this.sushiMaker.address, getBigNumber(1))
+      await this.sushiMaker.convert(this.sushi.address, this.weth.address)
+
+      await swapAll(this.bob, this.sushi, this.sushiEth, true);
+
+      expect((await this.weth.balanceOf(this.bob.address)).gt(initialAmount)).not.to.equal(true) // exploiter has gained money
+      expect(await this.sushi.balanceOf(this.sushiMaker.address)).to.equal(0)
+      expect(await this.sushiEth.balanceOf(this.sushiMaker.address)).to.equal(0)
+      expect((await this.sushi.balanceOf(this.bar.address)).lt("1897569270781234370")).not.to.equal(true) // bar has less money -> rugged
+    })
+    **/
     it("should convert USDC - ETH", async function () {
       await this.usdcEth.transfer(this.sushiMaker.address, getBigNumber(1))
       await this.sushiMaker.convert(this.usdc.address, this.weth.address)
